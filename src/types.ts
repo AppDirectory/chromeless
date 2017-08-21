@@ -1,6 +1,7 @@
 export interface Client {
   Network: any
   Page: any
+  DOM: any
   Input: any
   Runtime: any
   Emulation: any
@@ -8,6 +9,20 @@ export interface Client {
   target: {
     id: string
   }
+}
+
+export interface DeviceMetrics {
+  width: number
+  height: number
+  deviceScaleFactor?: number
+  mobile?: boolean
+  scale?: number
+  screenOrientation?: ScreenOrientation
+}
+
+export interface ScreenOrientation {
+  type: string
+  angle: number
 }
 
 export interface RemoteOptions {
@@ -26,11 +41,13 @@ export interface ChromelessOptions {
   debug?: boolean // false
   waitTimeout?: number // 10000ms
   implicitWait?: boolean // false
+  scrollBeforeClick?: boolean // false
   viewport?: {
     width?: number // 1440 if headless
     height?: number // 900 if headless
     scale?: number // 1
   }
+  launchChrome?: boolean // auto-launch chrome (local) `true`
   cdp?: CDPOptions
   remote?: RemoteOptions | boolean
 }
@@ -44,6 +61,17 @@ export type Command =
   | {
       type: 'goto'
       url: string
+    }
+  | {
+      type: 'clearCache'
+    }
+  | {
+      type: 'setViewport'
+      options: DeviceMetrics
+    }
+  | {
+      type: 'setUserAgent'
+      useragent: string
     }
   | {
       type: 'wait'
@@ -77,9 +105,24 @@ export type Command =
       type: 'returnScreenshot'
     }
   | {
+      type: 'returnHtml'
+    }
+  | {
+      type: 'returnPdf'
+      options?: PdfOptions
+    }
+  | {
       type: 'scrollTo'
       x: number
       y: number
+    }
+  | {
+      type: 'scrollToElement'
+      selector: string
+    }
+  | {
+      type: 'setHtml'
+      html: string
     }
   | {
       type: 'press'
@@ -93,19 +136,45 @@ export type Command =
       selector?: string
     }
   | {
-      type: 'cookiesClearAll'
+      type: 'clearCookies'
     }
   | {
-      type: 'cookiesSet'
+      type: 'deleteCookies'
+      name: string
+      url: string
+    }
+  | {
+      type: 'setCookies'
       nameOrCookies: string | Cookie | Cookie[]
       value?: string
     }
   | {
-      type: 'cookiesGetAll'
+      type: 'allCookies'
     }
   | {
-      type: 'cookiesGet'
+      type: 'cookies'
       nameOrQuery?: string | CookieQuery
+    }
+  | {
+      type: 'mousedown'
+      selector: string
+    }
+  | {
+      type: 'mouseup'
+      selector: string
+    }
+  | {
+      type: 'focus'
+      selector: string
+    }
+  | {
+      type: 'clearInput'
+      selector: string
+    }
+  | {
+      type: 'setFileInput'
+      selector: string
+      files: string[]
     }
 
 export interface Cookie {
@@ -129,4 +198,20 @@ export interface CookieQuery {
   httpOnly?: boolean
   secure?: boolean
   session?: boolean
+}
+
+// https://chromedevtools.github.io/devtools-protocol/tot/Page/#method-printToPDF
+export interface PdfOptions {
+  landscape?: boolean
+  displayHeaderFooter?: boolean
+  printBackground?: boolean
+  scale?: number
+  paperWidth?: number
+  paperHeight?: number
+  marginTop?: number
+  marginBottom?: number
+  marginLeft?: number
+  marginRight?: number
+  pageRanges?: string
+  ignoreInvalidPageRanges?: boolean
 }

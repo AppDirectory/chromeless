@@ -7,6 +7,7 @@ A [Serverless](https://serverless.com/) AWS Lambda service for running and inter
 1. [Setup](#setup)
 1. [Using the Proxy](#using-the-proxy)
 
+
 ## Setup
 
 Clone this repository and enter the `serverless` directory:
@@ -17,9 +18,11 @@ cd chromeless/serverless
 npm install
 ```
 
+### Configure
+
 Next, modify the `custom` section in `serverless.yml`.
 
-You must set `awsIotHost` to the your AWS IoT Custom Endpoint for your AWS region. You can find this with the AWS CLI with `aws iot describe-endpoint` or by navigating to the AWS IoT Console and going to Settings.
+You must set `awsIotHost` to the your AWS IoT Custom Endpoint for your AWS region. You can find this with the AWS CLI with `aws iot describe-endpoint --output text` or by navigating to the AWS IoT Console and going to Settings.
 
 For example:
 
@@ -48,6 +51,30 @@ provider:
 
 ...
 ```
+
+**Note:** The AWS Lambda function, API Gateway and IoT must all be in the _same_ region.
+
+**Note:** Deploying from Windows is currently not supported. See [#70](https://github.com/graphcool/chromeless/issues/70#issuecomment-318634457)
+
+
+### Credentials
+
+Before you can deploy, you must configure your AWS credentials either by defining `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environmental variables, or using an AWS profile. You can read more about this on the [Serverless Credentials Guide](https://serverless.com/framework/docs/providers/aws/guide/credentials/).
+
+In short, either:
+
+```bash
+export AWS_PROFILE=<your-profile-name>
+```
+
+or
+
+```bash
+export AWS_ACCESS_KEY_ID=<your-key-here>
+export AWS_SECRET_ACCESS_KEY=<your-secret-key-here>
+```
+
+### Deploy
 
 Once configured, deploying the service can be done with:
 
@@ -78,14 +105,23 @@ functions:
 
 ## Using the Proxy
 
-Connect to the proxy service with the `remote` option parameter on the Chromeless constructor. You must provide the endpoint URL provided during deployment either as an argument or set it in the `CHROMELESS_ENDPOINT_URL` environment variable. Note that this endpoint is _different_ from the AWS IoT Custom Endpoint.
+Connect to the proxy service with the `remote` option parameter on the Chromeless constructor. You must provide the endpoint URL provided during deployment either as an argument or set it in the `CHROMELESS_ENDPOINT_URL` environment variable. Note that this endpoint is _different_ from the AWS IoT Custom Endpoint. The Proxy's endpoint URL you want to use will look something like `https://XXXXXXXXXX.execute-api.eu-west-1.amazonaws.com/dev/`
+
+
+### Option 1: Environment Variables
 
 ```bash
 export CHROMELESS_ENDPOINT_URL=https://XXXXXXXXXX.execute-api.eu-west-1.amazonaws.com/dev
 export CHROMELESS_ENDPOINT_API_KEY=your-api-key-here
 ```
+and
+```js
+const chromeless = new Chromeless({
+  remote: true,
+})
+```
 
-Or
+### Option 2: Constructor options
 
 ```js
 const chromeless = new Chromeless({

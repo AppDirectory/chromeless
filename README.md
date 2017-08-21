@@ -1,4 +1,4 @@
-# Chromeless [![npm version](https://badge.fury.io/js/chromeless.svg)](https://badge.fury.io/js/chromeless)
+# Chromeless [![npm version](https://badge.fury.io/js/chromeless.svg)](https://badge.fury.io/js/chromeless) [![CircleCI](https://circleci.com/gh/graphcool/chromeless.svg?style=svg)](https://circleci.com/gh/graphcool/chromeless)
 
 Chrome automation made simple. Runs locally or headless on AWS Lambda. (**[See Demo](https://chromeless.netlify.com/)**)
 
@@ -94,13 +94,9 @@ run().catch(console.error.bind(console))
 
 ### Local Chrome Usage
 
-To run Chromeless locally, you need a recent version of Chrome or Chrome Canary installed and running.
+To run Chromeless locally, you need a recent version of Chrome or Chrome Canary installed (version 60 or greater). By default, chromeless will start Chrome automatically and will default to the most recent version found on your system if there's multiple. You can override this behavior by starting Chrome yourself, and passing a flag of `launchChrome: false` in the `Chromeless` constructor.
 
-**Windows** - Version 60 and greater is required for Chrome headless
-
-**Mac/Linux** - Version 59 and greater is required for Chrome headless
-
-For example, on MacOS:
+To launch Chrome yourself, and open the port for chromeless, follow this example:
 
 ```sh
 alias canary="/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary"
@@ -142,34 +138,41 @@ const chromeless = new Chromeless({
 
 **Chrome methods**
 - [`goto(url: string)`](docs/api.md#api-goto)
+- [`setUserAgent(useragent: string)`](docs/api.md#api-setUserAgent)
 - [`click(selector: string)`](docs/api.md#api-click)
 - [`wait(timeout: number)`](docs/api.md#api-wait-timeout)
 - [`wait(selector: string)`](docs/api.md#api-wait-selector)
-- [`wait(fn: (...args: any[]) => boolean, ...args: any[])`](docs/api.md#api-wait-fn)
+- [`wait(fn: (...args: any[]) => boolean, ...args: any[])`] - Not implemented yet
+- [`clearCache()`](docs/api.md#api-clearcache)
 - [`focus(selector: string)`](docs/api.md#api-focus)
 - [`press(keyCode: number, count?: number, modifiers?: any)`](docs/api.md#api-press)
 - [`type(input: string, selector?: string)`](docs/api.md#api-type)
 - [`back()`](docs/api.md#api-back) - Not implemented yet
 - [`forward()`](docs/api.md#api-forward) - Not implemented yet
 - [`refresh()`](docs/api.md#api-refresh) - Not implemented yet
-- [`mousedown()`](docs/api.md#api-mousedown) - Not implemented yet
-- [`mouseup()`](docs/api.md#api-mouseup) - Not implemented yet
+- [`mousedown(selector: string)`](docs/api.md#api-mousedown)
+- [`mouseup(selector: string)`](docs/api.md#api-mouseup)
 - [`scrollTo(x: number, y: number)`](docs/api.md#api-scrollto)
-- [`viewport(width: number, height: number)`](docs/api.md#api-viewport)
+- [`scrollToElement(selector: string)`](docs/api.md#api-scrolltoelement)
+- [`setHtml(html: string)`](docs/api.md#api-sethtml)
+- [`setViewport(options: DeviceMetrics)`](docs/api.md#api-setviewport)
 - [`evaluate<U extends any>(fn: (...args: any[]) => void, ...args: any[])`](docs/api.md#api-evaluate)
 - [`inputValue(selector: string)`](docs/api.md#api-inputvalue)
 - [`exists(selector: string)`](docs/api.md#api-exists)
 - [`screenshot()`](docs/api.md#api-screenshot)
-- [`pdf()`](docs/api.md#api-pdf) - Not implemented yet
-- [`cookiesGet()`](docs/api.md#api-cookiesget)
-- [`cookiesGet(name: string)`](docs/api.md#api-cookiesget-name)
-- [`cookiesGet(query: CookieQuery)`](docs/api.md#api-cookiesget-query) - Not implemented yet
-- [`cookiesGetAll()`](docs/api.md#api-cookiesgetall)
-- [`cookiesSet(name: string, value: string)`](docs/api.md#api-cookiesset)
-- [`cookiesSet(cookie: Cookie)`](docs/api.md#api-cookiesset-one)
-- [`cookiesSet(cookies: Cookie[])`](docs/api.md#api-cookiesset-many)
-- [`cookiesClear(name: string)`](docs/api.md#api-cookiesclear)
-- [`cookiesClearAll()`](docs/api.md#api-cookiesclearall)
+- [`pdf(options?: PdfOptions)`](docs/api.md#api-pdf)
+- [`html()`](docs/api.md#api-html)
+- [`cookies()`](docs/api.md#api-cookies)
+- [`cookies(name: string)`](docs/api.md#api-cookies-name)
+- [`cookies(query: CookieQuery)`](docs/api.md#api-cookies-query) - Not implemented yet
+- [`allCookies()`](docs/api.md#api-all-cookies)
+- [`setCookies(name: string, value: string)`](docs/api.md#api-setcookies)
+- [`setCookies(cookie: Cookie)`](docs/api.md#api-setcookies-one)
+- [`setCookies(cookies: Cookie[])`](docs/api.md#api-setcookies-many)
+- [`deleteCookies(name: string)`](docs/api.md#api-deletecookies)
+- [`clearCookies()`](docs/api.md#api-clearcookies)
+- [`clearInput(selector: string)`](docs/api.md#api-clearInput)
+- [`setFileInput(selector: string, files: string | string[])`](docs/api.md#api-set-file-input)
 
 ## Configuring Development Environment
 
@@ -177,15 +180,15 @@ const chromeless = new Chromeless({
 - NodeJS version 8.2 and greater
 
 1) Clone this repository
-2) Run "npm install"
-3) To build: "npm run build"
+2) Run `npm install`
+3) To build: `npm run build`
 
 #### Linking this NPM repository
 
 1) Go to this repository locally
-2) Run "npm link"
+2) Run `npm link`
 3) Go to the folder housing your chromeless scripts
-4) Run "npm link chromeless"
+4) Run `npm link chromeless`
 
 Now your local chromeless scripts will use your local development of chromeless.
 
@@ -209,10 +212,38 @@ This means you can easily execute > 100.000 tests for free in the free tier.
 
 If you're running Chromeless on AWS Lambda, the execution cannot take longer than 5 minutes which is the current limit of Lambda. Besides that, every feature that's supported in Chrome is also working with Chromeless. The maximal number of concurrent function executions is 1000. [AWS API Limits](http://docs.aws.amazon.com/lambda/latest/dg/limits.html)
 
+## Troubleshooting
+### Error: Unable to get presigned websocket URL and connect to it.
+In case you get an error like this when running the Chromeless client:
+```
+{ HTTPError: Response code 403 (Forbidden)
+    at stream.catch.then.data (/code/chromeless/node_modules/got/index.js:182:13)
+    at process._tickDomainCallback (internal/process/next_tick.js:129:7)
+  name: 'HTTPError',
+...
+Error: Unable to get presigned websocket URL and connect to it.
+```
+Make sure that you're running at least version `1.19.0` of [`serverless`](https://github.com/serverless/serverless). It is a known [issue](https://github.com/serverless/serverless/issues/2450), that the API Gateway API keys are not setup correctly in older Serverless versions. Best is to run `npm run deploy` within the project as this will use the local installed version of `serverless`.
+
+### Resource ServerlessDeploymentBucket does not exist for stack chromeless-serverless-dev
+In case the deployment of the serverless function returns an error like this:
+```
+  Serverless Error ---------------------------------------
+
+  Resource ServerlessDeploymentBucket does not exist for stack chromeless-serverless-dev
+```
+Please check, that there is no stack with the name `chromeless-serverless-dev` existing yet, otherwise serverless can't correctly provision the bucket.
+
+### No command gets executed
+In order for the commands to be processed, make sure, that you call one of the commands `screenshot`, `evaluate`, `cookiesGetAll` or `end` at the end of your execution chain.
+
 ## Contributors
 
 A big thank you to all contributors and supporters of this repository 💚
 
+<a href="https://github.com/joelgriffith/" target="_blank">
+  <img src="https://github.com/joelgriffith.png?size=64" width="64" height="64" alt="joelgriffith">
+</a>
 <a href="https://github.com/adieuadieu/" target="_blank">
   <img src="https://github.com/adieuadieu.png?size=64" width="64" height="64" alt="adieuadieu">
 </a>
@@ -222,9 +253,52 @@ A big thank you to all contributors and supporters of this repository 💚
 <a href="https://github.com/timsuchanek/" target="_blank">
   <img src="https://github.com/timsuchanek.png?size=64" width="64" height="64" alt="timsuchanek">
 </a>
+
+
+<a href="https://github.com/Chrisgozd/" target="_blank">
+  <img src="https://github.com/Chrisgozd.png?size=64" width="64" height="64" alt="Chrisgozd">
+</a>
+<a href="https://github.com/criticalbh/" target="_blank">
+  <img src="https://github.com/criticalbh.png?size=64" width="64" height="64" alt="criticalbh">
+</a>
+<a href="https://github.com/d2s/" target="_blank">
+  <img src="https://github.com/d2s.png?size=64" width="64" height="64" alt="d2s">
+</a>
+<a href="https://github.com/emeth-/" target="_blank">
+  <img src="https://github.com/emeth-.png?size=64" width="64" height="64" alt="emeth-">
+</a>
+<a href="https://github.com/githubixx/" target="_blank">
+  <img src="https://github.com/githubixx.png?size=64" width="64" height="64" alt="githubixx">
+</a>
+<a href="https://github.com/hax/" target="_blank">
+  <img src="https://github.com/hax.png?size=64" width="64" height="64" alt="hax">
+</a>
+<a href="https://github.com/Hazealign/" target="_blank">
+  <img src="https://github.com/Hazealign.png?size=64" width="64" height="64" alt="Hazealign">
+</a>
+<a href="https://github.com/joeyvandijk/" target="_blank">
+  <img src="https://github.com/joeyvandijk.png?size=64" width="64" height="64" alt="joeyvandijk">
+</a>
+<a href="https://github.com/liady/" target="_blank">
+  <img src="https://github.com/liady.png?size=64" width="64" height="64" alt="liady">
+</a>
 <a href="https://github.com/matthewmueller/" target="_blank">
   <img src="https://github.com/matthewmueller.png?size=64" width="64" height="64" alt="matthewmueller">
 </a>
+<a href="https://github.com/seangransee/" target="_blank">
+  <img src="https://github.com/seangransee.png?size=64" width="64" height="64" alt="seangransee">
+</a>
+<a href="https://github.com/sorenbs/" target="_blank">
+  <img src="https://github.com/sorenbs.png?size=64" width="64" height="64" alt="sorenbs">
+</a>
+<a href="https://github.com/toddwprice/" target="_blank">
+  <img src="https://github.com/toddwprice.png?size=64" width="64" height="64" alt="toddwprice">
+</a>
+<a href="https://github.com/vladgolubev/" target="_blank">
+  <img src="https://github.com/vladgolubev.png?size=64" width="64" height="64" alt="vladgolubev">
+</a>
+
+
 
 
 ## Credits

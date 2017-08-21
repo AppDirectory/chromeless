@@ -7,34 +7,39 @@ Chromeless provides TypeScript typings.
 
 **Chrome methods**
 - [`goto(url: string)`](#api-goto)
+- [`setUserAgent(useragent: string)`](#api-setuseragent)
 - [`click(selector: string)`](#api-click)
 - [`wait(timeout: number)`](#api-wait-timeout)
-- [`wait(selector: string)`](#api-wait-selector)
-- [`wait(fn: (...args: any[]) => boolean, ...args: any[])`](#api-wait-fn)
+- [`wait(selector: string, timeout?: number)`](#api-wait-selector)
+- [`wait(fn: (...args: any[]) => boolean, ...args: any[])`] - Not implemented yet
+- [`clearCache()`](docs/api.md#api-clearcache)
 - [`focus(selector: string)`](#api-focus)
 - [`press(keyCode: number, count?: number, modifiers?: any)`](#api-press)
 - [`type(input: string, selector?: string)`](#api-type)
 - [`back()`](#api-back) - Not implemented yet
 - [`forward()`](#api-forward) - Not implemented yet
 - [`refresh()`](#api-refresh) - Not implemented yet
-- [`mousedown()`](#api-mousedown) - Not implemented yet
-- [`mouseup()`](#api-mouseup) - Not implemented yet
+- [`mousedown(selector: string)`](#api-mousedown)
+- [`mouseup(selector: string)`](#api-mouseup)
 - [`scrollTo(x: number, y: number)`](#api-scrollto)
-- [`viewport(width: number, height: number)`](#api-viewport)
+- [`scrollToElement(selector: string)`](#api-scrolltoelement)
+- [`setHtml(html: string)`](#api-sethtml)
+- [`setViewport(options: DeviceMetrics)`](#api-setviewport)
 - [`evaluate<U extends any>(fn: (...args: any[]) => void, ...args: any[])`](#api-evaluate)
 - [`inputValue(selector: string)`](#api-inputvalue)
 - [`exists(selector: string)`](#api-exists)
 - [`screenshot()`](#api-screenshot)
-- [`pdf()`](#api-pdf) - Not implemented yet
-- [`cookiesGet()`](#api-cookiesget)
-- [`cookiesGet(name: string)`](#api-cookiesget-name)
-- [`cookiesGet(query: CookieQuery)`](#api-cookiesget-query) - Not implemented yet
-- [`cookiesGetAll()`](#api-cookiesgetall)
-- [`cookiesSet(name: string, value: string)`](#api-cookiesset)
-- [`cookiesSet(cookie: Cookie)`](#api-cookiesset-one)
-- [`cookiesSet(cookies: Cookie[])`](#api-cookiesset-many)
-- [`cookiesClear(name: string)`](#api-cookiesclear)
-- [`cookiesClearAll()`](#api-cookiesclearall)
+- [`pdf(options?: PdfOptions)`](#api-pdf)
+- [`html()`](#api-html)
+- [`cookies()`](#api-cookies)
+- [`cookies(name: string)`](#api-cookies-name)
+- [`cookies(query: CookieQuery)`](#api-cookies-query) - Not implemented yet
+- [`allCookies()`](#api-all-cookies)
+- [`setCookies(name: string, value: string)`](#api-setcookies)
+- [`setCookies(cookie: Cookie)`](#api-setcookies-one)
+- [`setCookies(cookies: Cookie[])`](#api-setcookies-many)
+- [`deleteCookies(name: string)`](#api-deletecookies)
+- [`clearCookies()`](#api-clearcookies)
 
 
 ---------------------------------------
@@ -65,6 +70,23 @@ __Example__
 
 ```js
 await chromeless.goto('https://google.com/')
+```
+
+---------------------------------------
+
+<a name="api-setuseragent" />
+
+### setUserAgent(useragent: string): Chromeless<T>
+
+Set the useragent of the browser. It should be called before `.goto()`.
+
+__Arguments__
+- `useragent` - UserAgent to use
+
+__Example__
+
+```js
+await chromeless.setUserAgent('Custom Chromeless UserAgent x.x.x')
 ```
 
 ---------------------------------------
@@ -105,17 +127,19 @@ await chromeless.wait(1000)
 
 <a name="api-wait-selector" />
 
-### wait(selector: string): Chromeless<T>
+### wait(selector: string, timeout?: number): Chromeless<T>
 
 Wait until something appears. Useful for waiting for things to render.
 
 __Arguments__
 - `selector` - DOM selector to wait for
+- `timeout` - How long to wait for element to appear (default is value of waitTimeout option)
 
 __Example__
 
 ```js
 await chromeless.wait('div#loaded')
+await chromeless.wait('div#loaded', 1000)
 ```
 
 ---------------------------------------
@@ -123,6 +147,8 @@ await chromeless.wait('div#loaded')
 <a name="api-wait-fn" />
 
 ### wait(fn: (...args: any[]) => boolean, ...args: any[]): Chromeless<T>
+
+Not implemented yet
 
 Wait until a function returns.
 
@@ -134,6 +160,22 @@ __Example__
 
 ```js
 await chromeless.wait(() => { return console.log('@TODO: put a better example here') })
+```
+
+---------------------------------------
+
+<a name="api-clearcache" />
+
+### clearCache(): Chromeless<T>
+
+Clears browser cache.
+
+Service workers and Storage (IndexedDB, WebSQL, etc) needs to be cleared separately. More information at the [Chrome Devtools Protocol website](https://chromedevtools.github.io/devtools-protocol/tot).
+
+__Example__
+
+```js
+await chromeless.clearCache()
 ```
 
 ---------------------------------------
@@ -220,17 +262,35 @@ Not implemented yet
 
 <a name="api-mousedown" />
 
-### mousedown() - Not implemented yet
+### mousedown(selector: string): Chromeless<T>
 
-Not implemented yet
+Send mousedown event on something in the DOM.
+
+__Arguments__
+- `selector` - DOM selector for element to send mousedown event
+
+__Example__
+
+```js
+await chromeless.mousedown('#item')
+```
 
 ---------------------------------------
 
 <a name="api-mouseup" />
 
-### mouseup() - Not implemented yet
+### mouseup(selector: string): Chromeless<T>
 
-Not implemented yet
+Send mouseup event on something in the DOM.
+
+__Arguments__
+- `selector` - DOM selector for element to send mouseup event
+
+__Example__
+
+```js
+await chromeless.mouseup('#placeholder')
+```
 
 ---------------------------------------
 
@@ -241,31 +301,64 @@ Not implemented yet
 Scroll to somewhere in the document.
 
 __Arguments__
-- `x` - Offset from top of the document
-- `y` - Offset from the left of the document
+- `x` - Offset from the left of the document
+- `y` - Offset from the top of the document
 
 __Example__
 
 ```js
-await chromeless.scrollTo(500, 0)
+await chromeless.scrollTo(0, 500)
 ```
 
 ---------------------------------------
 
-<a name="api-viewport" />
+<a name="api-scrolltoelement" />
 
-### viewport(width: number, height: number)
+### scrollToElement(selector: string): Chromeless<T>
 
-Resize the viewport. Useful if you want to capture more or less of the document in a screenshot.
+Scroll to location of element. Behavior is simiar to `<a href="#fragment"></a>` — target element will be at the top of viewport
 
 __Arguments__
-- `width` - Viewport width
-- `height` - Viewport height
+- `selector` - DOM selector for element to scroll to
+
+__Example__
+
+  ```js
+await chromeless.scrollToElement('.button')
+  ```
+
+  ---------------------------------------
+
+<a name="api-sethtml" />
+
+### setHtml(html: string): Chromeless<T>
+
+Sets given markup as the document's HTML.
+
+__Arguments__
+- `html` - HTML to set as the document's markup.
 
 __Example__
 
 ```js
-await chromeless.viewport(1024, 800)
+await chromeless.setHtml('<h1>Hello world!</h1>')
+```
+
+---------------------------------------
+
+<a name="api-setviewport" />
+
+### setViewport(options:DeviceMetrics)
+
+Resize the viewport. Useful if you want to capture more or less of the document in a screenshot.
+
+__Arguments__
+- `options` - DeviceMetrics object
+
+__Example__
+
+```js
+await chromeless.setViewport({width: 1024, height: 600, scale: 1})
 ```
 
 ---------------------------------------
@@ -274,10 +367,10 @@ await chromeless.viewport(1024, 800)
 
 ### evaluate<U extends any>(fn: (...args: any[]) => void, ...args: any[]): Chromeless<U>
 
-Evaluate Javascript code within Chrome in the context of the DOM.
+Evaluate Javascript code within Chrome in the context of the DOM. Returns the resulting value or a Promise.
 
 __Arguments__
-- `fn` - Function to evaluate within Chrome
+- `fn` - Function to evaluate within Chrome, can be async (Promise).
 - `[arguments]` - Arguments to pass to the function
 
 __Example__
@@ -351,29 +444,65 @@ console.log(screenshot) // prints local file path or S3 URL
 
 <a name="api-pdf" />
 
-### pdf() - Not implemented yet
+### pdf(options?: PdfOptions) - Chromeless<string>
 
-Not implemented yet
+Print to a PDF of the document as framed by the viewport.
+When running Chromeless locally this returns the local file path to the PDF.
+When run over the Chromeless Proxy service, a URL to the PDF on S3 is returned.
+
+Requires that Chrome be running headless-ly. [More](https://github.com/graphcool/chromeless/issues/146)
+
+
+__Arguments__
+- `options` - An object containing overrides for [printToPDF() parameters](https://chromedevtools.github.io/devtools-protocol/tot/Page/#method-printToPDF)
+
+__Example__
+
+```js
+const pdf = await chromeless
+  .goto('https://google.com/')
+  .pdf({landscape: true})
+
+console.log(pdf) // prints local file path or S3 URL
+```
 
 ---------------------------------------
 
-<a name="api-cookiesget" />
+<a name="api-html" />
 
-### cookiesGet(): Chromeless<Cookie[] | null>
+### html(): Chromeless<string>
+
+Get full HTML of the loaded page.
+
+__Example__
+
+```js
+const html = await chromeless
+  .setHtml('<h1>Hello world!</h1>')
+  .html()
+
+console.log(html) // <html><head></head><body><h1>Hello world!</h1></body></html>
+```
+
+---------------------------------------
+
+<a name="api-cookies" />
+
+### cookies(): Chromeless<Cookie[] | null>
 
 Returns all browser cookies for the current URL.
 
 __Example__
 
 ```js
-await chromeless.cookiesGet()
+await chromeless.cookies()
 ```
 
 ---------------------------------------
 
-<a name="api-cookiesget-name" />
+<a name="api-cookies-name" />
 
-### cookiesGet(name: string): Chromeless<Cookie | null>
+### cookies(name: string): Chromeless<Cookie | null>
 
 Returns a specific browser cookie by name for the current URL.
 
@@ -383,36 +512,36 @@ __Arguments__
 __Example__
 
 ```js
-const cookie = await chromeless.cookiesGet('creepyTrackingCookie')
+const cookie = await chromeless.cookies('creepyTrackingCookie')
 ```
 
 ---------------------------------------
 
-<a name="api-cookiesget-query" />
+<a name="api-cookies-query" />
 
-### cookiesGet(query: CookieQuery) - Not implemented yet
+### cookies(query: CookieQuery) - Not implemented yet
 
 Not implemented yet
 
 ---------------------------------------
 
-<a name="api-cookiesgetall" />
+<a name="api-all-cookies" />
 
-### cookiesGetAll(): Chromeless<Cookie[]>
+### allCookies(): Chromeless<Cookie[]>
 
 Returns all browser cookies. Nam nom nom.
 
 __Example__
 
 ```js
-await chromeless.cookiesGetAll()
+await chromeless.allCookies()
 ```
 
 ---------------------------------------
 
-<a name="api-cookiesset" />
+<a name="api-setcookies" />
 
-### cookiesSet(name: string, value: string): Chromeless<T>
+### setCookies(name: string, value: string): Chromeless<T>
 
 Sets a cookie with the given name and value.
 
@@ -423,14 +552,14 @@ __Arguments__
 __Example__
 
 ```js
-await chromeless.cookiesSet('visited', '1')
+await chromeless.setCookies('visited', '1')
 ```
 
 ---------------------------------------
 
-<a name="api-cookiesset-one" />
+<a name="api-setcookies-one" />
 
-### cookiesSet(cookie: Cookie): Chromeless<T>
+### setCookies(cookie: Cookie): Chromeless<T>
 
 Sets a cookie with the given cookie data; may overwrite equivalent cookies if they exist.
 
@@ -440,7 +569,7 @@ __Arguments__
 __Example__
 
 ```js
-await chromeless.cookiesSet({
+await chromeless.setCookies({
   url: 'http://google.com/',
   domain: 'google.com',
   name: 'userData',
@@ -456,9 +585,9 @@ await chromeless.cookiesSet({
 
 ---------------------------------------
 
-<a name="api-cookiesset-many" />
+<a name="api-setcookies-many" />
 
-### cookiesSet(cookies: Cookie[]): Chromeless<T>
+### setCookies(cookies: Cookie[]): Chromeless<T>
 
 Sets many cookies with the given cookie data; may overwrite equivalent cookies if they exist.
 
@@ -468,7 +597,7 @@ __Arguments__
 __Example__
 
 ```js
-await chromeless.cookiesSet([
+await chromeless.setCookies([
   {
     url: 'http://google.com/',
     domain: 'google.com',
@@ -497,23 +626,61 @@ await chromeless.cookiesSet([
 
 ---------------------------------------
 
-<a name="api-cookiesclear" />
+<a name="api-deletecookies" />
 
-### cookiesClear(name: string) - Not implemented yet
+### deleteCookies(name: string) - Not implemented yet
 
-Not implemented yet
+Delete a specific cookie.
+
+__Arguments__
+- `name` - name of the cookie
+
+__Example__
+
+```js
+await chromeless.deleteCookies('cookieName')
+```
 
 ---------------------------------------
 
-<a name="api-cookiesclearall" />
+<a name="api-clearcookies" />
 
-### cookiesClearAll(): Chromeless<T>
+### clearCookies(): Chromeless<T>
 
-Clears browser cookies.
+Clears all browser cookies.
+
+__Example__
+
+```js
+await chromeless.clearCookies()
+```
+---------------------------------------
+
+<a name="api-clearInput" />
+
+### clearInput(selector: string): Chromeless<T>
+
+Clear input text.
 
 
 __Example__
 
 ```js
-await chromeless.cookiesClearAll()
+await chromeless.clearInput('#username')
+```
+---------------------------------------
+
+<a name="api-set-file-input" />
+
+### setFileInput(selector: string, files: string | string[]): Chromeless<T>
+
+Set file(s) for selected file input.
+
+Currently not supported in the Proxy. Progress tracked in [#186](https://github.com/graphcool/chromeless/issues/186)
+
+
+__Example__
+
+```js
+await chromeless.setFileInput('.uploader', '/User/Me/Documents/img.jpg')
 ```
